@@ -6,91 +6,133 @@
 
 #include "../../include/tokens.h"
 #include "../../include/lexer.h"
+#include "../../include/parser.h"
 
 static int current_line = 1;
 static char last_token_type = 'x';
 
 // Keywords table
-static struct {
-    const char* word;
+static struct
+{
+    const char *word;
     TokenType type;
 } keywords[] = {
     {"if", TOKEN_IF},
     {"int", TOKEN_INT},
-    {"print", TOKEN_PRINT}
-};
+    {"print", TOKEN_PRINT},
+    {"else", TOKEN_ELSE},
+    {"repeat", TOKEN_REPEAT},
+    {"until", TOKEN_UNTIL},
+    {"for", TOKEN_FOR},
+    {"while", TOKEN_WHILE},
+    {"break", TOKEN_BREAK},
+    {"factorial", TOKEN_FACTORIAL},
+    {"return", TOKEN_RETURN},
+    {"void", TOKEN_VOID},
+    {"float", TOKEN_FLOAT},
+    {"char", TOKEN_CHAR},
+    {"const", TOKEN_CONST},};
 
-static int is_keyword(const char* word) {
-    for (int i = 0; i < sizeof(keywords) / sizeof(keywords[0]); i++) {
-        if (strcmp(word, keywords[i].word) == 0) {
+static int is_keyword(const char *word)
+{
+    for (int i = 0; i < sizeof(keywords) / sizeof(keywords[0]); i++)
+    {
+        if (strcmp(word, keywords[i].word) == 0)
+        {
             return keywords[i].type;
         }
     }
     return 0;
 }
 
-void print_error(ErrorType error, int line, const char* lexeme) {
+void print_error(ErrorType error, int line, const char *lexeme)
+{
     printf("Lexical Error at line %d: ", line);
-    switch(error) {
-        case ERROR_INVALID_CHAR:
-            printf("Invalid character '%s'\n", lexeme);
-            break;
-        case ERROR_INVALID_NUMBER:
-            printf("Invalid number format\n");
-            break;
-        case ERROR_CONSECUTIVE_OPERATORS:
-            printf("Consecutive operators not allowed\n");
-            break;
-        case ERROR_INVALID_IDENTIFIER:
-            printf("Invalid identifier\n");
-            break;
-        case ERROR_UNEXPECTED_TOKEN:
-            printf("Unexpected token '%s'\n", lexeme);
-            break;
-        default:
-            printf("Unknown error\n");
+    switch (error)
+    {
+    case ERROR_INVALID_CHAR:
+        printf("Invalid character '%s'\n", lexeme);
+        break;
+    case ERROR_INVALID_NUMBER:
+        printf("Invalid number format\n");
+        break;
+    case ERROR_CONSECUTIVE_OPERATORS:
+        printf("Consecutive operators not allowed\n");
+        break;
+    case ERROR_INVALID_IDENTIFIER:
+        printf("Invalid identifier\n");
+        break;
+    case ERROR_UNEXPECTED_TOKEN:
+        printf("Unexpected token '%s'\n", lexeme);
+        break;
+    case ERROR_UNKNOWN_ESCAPE_SEQUENCE:
+        printf("Unknown escape sequence\n");
+        break;
+    case ERROR_UNTERMINATED_STRING:
+        printf("Unterminated string\n");
+    default:
+        printf("Unknown error\n");
     }
 }
 
-void print_token(Token token) {
-    if (token.error != ERROR_NONE) {
+void print_token(Token token)
+{
+    if (token.error != ERROR_NONE)
+    {
         print_error(token.error, token.line, token.lexeme);
         return;
     }
 
     printf("Token: ");
-    switch(token.type) {
-        case TOKEN_NUMBER:     printf("NUMBER"); break;
-        case TOKEN_OPERATOR:   printf("OPERATOR"); break;
-        case TOKEN_IDENTIFIER: printf("IDENTIFIER"); break;
-        case TOKEN_EQUALS:     printf("EQUALS"); break;
-        case TOKEN_SEMICOLON:  printf("SEMICOLON"); break;
-        case TOKEN_LPAREN:     printf("LPAREN"); break;
-        case TOKEN_RPAREN:     printf("RPAREN"); break;
-        case TOKEN_LBRACE:     printf("LBRACE"); break;
-        case TOKEN_RBRACE:     printf("RBRACE"); break;
-        case TOKEN_IF:         printf("IF"); break;
-        case TOKEN_INT:        printf("INT"); break;
-        case TOKEN_PRINT:      printf("PRINT"); break;
-        case TOKEN_EOF:        printf("EOF"); break;
-        default:              printf("UNKNOWN");
+    switch (token.type)
+    {
+    case TOKEN_NUMBER:      printf("NUMBER"); break;
+        case TOKEN_OPERATOR:    printf("OPERATOR"); break;
+        case TOKEN_COMPARISON:  printf("COMPARISON"); break;
+        case TOKEN_IDENTIFIER:  printf("IDENTIFIER"); break;
+        case TOKEN_EQUALS:      printf("EQUALS"); break;
+        case TOKEN_SEMICOLON:   printf("SEMICOLON"); break;
+        case TOKEN_LPAREN:      printf("LPAREN"); break;
+        case TOKEN_RPAREN:      printf("RPAREN"); break;
+        case TOKEN_LBRACE:      printf("LBRACE"); break;
+        case TOKEN_RBRACE:      printf("RBRACE"); break;
+        case TOKEN_LBRACK:      printf("LBRACK"); break;
+        case TOKEN_RBRACK:      printf("RBRACK"); break;
+        case TOKEN_IF:          printf("IF"); break;
+        case TOKEN_ELSE:        printf("ELSE"); break;
+        case TOKEN_REPEAT:      printf("REPEAT"); break;
+        case TOKEN_UNTIL:       printf("UNTIL"); break;
+        case TOKEN_FOR:         printf("FOR"); break;
+        case TOKEN_BREAK:       printf("BREAK"); break;
+        case TOKEN_VOID:        printf("VOID"); break;
+        case TOKEN_CONST:       printf("CONST"); break;
+        case TOKEN_INT:         printf("INT"); break;
+        case TOKEN_FLOAT:       printf("FLOAT"); break;
+        case TOKEN_CHAR:        printf("CHAR"); break;
+        case TOKEN_PRINT:       printf("PRINT"); break;
+        case TOKEN_EOF:         printf("EOF"); break;
+        default:                printf("UNKNOWN");
     }
     printf(" | Lexeme: '%s' | Line: %d\n", token.lexeme, token.line);
 }
 
-Token get_next_token(const char* input, int* pos) {
+Token get_next_token(const char *input, int *pos)
+{
     Token token = {TOKEN_ERROR, "", current_line, ERROR_NONE};
     char c;
 
     // Skip whitespace and track line numbers
-    while ((c = input[*pos]) != '\0' && (c == ' ' || c == '\n' || c == '\t')) {
-        if (c == '\n') {
+    while ((c = input[*pos]) != '\0' && (c == ' ' || c == '\n' || c == '\t'))
+    {
+        if (c == '\n')
+        {
             current_line++;
         }
         (*pos)++;
     }
 
-    if (input[*pos] == '\0') {
+    if (input[*pos] == '\0')
+    {
         token.type = TOKEN_EOF;
         strcpy(token.lexeme, "EOF");
         return token;
@@ -99,9 +141,11 @@ Token get_next_token(const char* input, int* pos) {
     c = input[*pos];
 
     // Handle numbers
-    if (isdigit(c)) {
+    if (isdigit(c))
+    {
         int i = 0;
-        do {
+        do
+        {
             token.lexeme[i++] = c;
             (*pos)++;
             c = input[*pos];
@@ -113,9 +157,11 @@ Token get_next_token(const char* input, int* pos) {
     }
 
     // Handle identifiers and keywords
-    if (isalpha(c) || c == '_') {
+    if (isalpha(c) || c == '_')
+    {
         int i = 0;
-        do {
+        do
+        {
             token.lexeme[i++] = c;
             (*pos)++;
             c = input[*pos];
@@ -125,10 +171,63 @@ Token get_next_token(const char* input, int* pos) {
 
         // Check if it's a keyword
         TokenType keyword_type = is_keyword(token.lexeme);
-        if (keyword_type) {
+        if (keyword_type)
+        {
             token.type = keyword_type;
-        } else {
+        }
+        else
+        {
             token.type = TOKEN_IDENTIFIER;
+        }
+        return token;
+    }
+
+    //String handeling
+    if (c == '"') {
+        int i = 0;
+
+        (*pos)++; // skip opening quote
+        c = input[*pos];
+        
+        while (c != '\0' && c != '"') {
+            // handle escape sequences like \n, \t, etc
+            if (c == '\\') {
+                (*pos)++;
+                c = input[*pos];
+                switch (c) {
+                    case 'n':
+                        token.lexeme[i++] = '\n';
+                        break;
+                    case 't':
+                        token.lexeme[i++] = '\t';
+                        break;
+                    case '\\':
+                        token.lexeme[i++] = '\\';
+                        break;
+                    case '"':
+                        token.lexeme[i++] = '"';
+                        break;
+                    default:
+                        token.error = ERROR_UNKNOWN_ESCAPE_SEQUENCE;
+                        token.lexeme[i++] = c;
+                }
+            } else {
+                token.lexeme[i++] = c;
+            }
+            (*pos)++;
+            c = input[*pos];
+            if (i >= (int)sizeof(token.lexeme) - 1) break; // Avoid overflow
+        }
+        if (c == '"') {
+            // Found closing quote
+            (*pos)++; // skip closing quote
+            token.lexeme[i] = '\0';
+            token.type = TOKEN_STRING_LITERAL;
+        } else {
+            // Unterminated string
+            token.type = TOKEN_ERROR;
+            token.error = ERROR_UNTERMINATED_STRING;
+            token.lexeme[i] = '\0';
         }
         return token;
     }
@@ -138,58 +237,63 @@ Token get_next_token(const char* input, int* pos) {
     token.lexeme[0] = c;
     token.lexeme[1] = '\0';
 
-    switch(c) {
-        case '+': case '-': case '*': case '/':
-            if (last_token_type == 'o') {
-                token.error = ERROR_CONSECUTIVE_OPERATORS;
-                return token;
-            }
-            token.type = TOKEN_OPERATOR;
-            last_token_type = 'o';
-            break;
-        case '=':
-            token.type = TOKEN_EQUALS;
-            break;
-        case ';':
-            token.type = TOKEN_SEMICOLON;
-            break;
-        case '(':
-            token.type = TOKEN_LPAREN;
-            break;
-        case ')':
-            token.type = TOKEN_RPAREN;
-            break;
-        case '{':
-            token.type = TOKEN_LBRACE;
-            break;
-        case '}':
-            token.type = TOKEN_RBRACE;
-            break;
-        default:
-            token.error = ERROR_INVALID_CHAR;
-            break;
+    switch (c)
+    {
+    case '+':
+    case '-':
+    case '*':
+    case '/':
+        if (last_token_type == 'o')
+        {
+            token.error = ERROR_CONSECUTIVE_OPERATORS;
+            return token;
+        }
+        token.type = TOKEN_OPERATOR;
+        last_token_type = 'o';
+        break;
+    case '=':
+        token.type = TOKEN_EQUALS;
+        break;
+    case ';':
+        token.type = TOKEN_SEMICOLON;
+        break;
+    case '(':
+        token.type = TOKEN_LPAREN;
+        break;
+    case ')':
+        token.type = TOKEN_RPAREN;
+        break;
+    case '{':
+        token.type = TOKEN_LBRACE;
+        break;
+    case '}':
+        token.type = TOKEN_RBRACE;
+        break;
+    default:
+        token.error = ERROR_INVALID_CHAR;
+        break;
     }
 
     return token;
 }
 
-// int main() {
-//     const char *input = "int x = 123;\n"   // Basic declaration and number
-//                        "test_var = 456;\n"  // Identifier and assignment
-//                        "print x;\n"         // Keyword and identifier
-//                        "if (y > 10) {\n"    // Keywords, identifiers, operators
-//                        "    @#$ invalid\n"  // Error case
-//                        "    x = ++2;\n"     // Consecutive operator error
-//                        "}";
-//
-//     printf("Analyzing input:\n%s\n\n", input);
-//     int position = 0;
-//     Token token;
-//
-//     do {
-//         token = get_next_token(input, &position);
-//         print_token(token);
-//     } while (token.type != TOKEN_EOF);
-//
-//     return 0;
-// }
+int main() {
+    const char *input = "int x = 123;\n"   // Basic declaration and number
+                       "test_var = 456;\n"  // Identifier and assignment
+                       "print x;\n"         // Keyword and identifier
+                       "if (y > 10) {\n"    // Keywords, identifiers, operators
+                       "    @#$ invalid\n"  // Error case
+                       "    x = ++2;\n"     // Consecutive operator error
+                       "}";
+
+    printf("Analyzing input:\n%s\n\n", input);
+    int position = 0;
+    Token token;
+
+    do {
+        token = get_next_token(input, &position);
+        print_token(token);
+    } while (token.type != TOKEN_EOF);
+
+    return 0;
+}
