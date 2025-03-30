@@ -1,5 +1,4 @@
 #include "../../include/semantic.h"
-#include "../../include/parser.h"
 #include "../../include/tokens.h"
 #include <stdio.h>
 #include <stdlib.h>
