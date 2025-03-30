@@ -120,9 +120,11 @@ int check_statement(ASTNode *node, SymbolTable *table) {
     switch (node->type) {
     case AST_VARDECL:
         check_declaration(node, table);
+        check_statement(node->next, table);
         break;
     case AST_ASSIGN:
         check_assignment(node, table);
+        check_statement(node->next, table);
         break;
     case AST_IF:
         check_expression(node->left, table);
@@ -263,7 +265,43 @@ void remove_symbols_in_current_scope(SymbolTable *table) {
 }
 
 // check expression temporary for testing
-int check_expression(ASTNode *node, SymbolTable *table) { return 0; }
+int check_expression(ASTNode *node, SymbolTable *table) {
+    if (!node)
+        return 1;
+
+    int result = 1;
+
+    switch (node->type) {
+    case AST_IDENTIFIER: {
+        const char *name = node->token.lexeme;
+        Symbol *symbol = lookup_symbol(table, name);
+        if (!symbol) {
+            semantic_error(SEM_ERROR_UNDECLARED_VARIABLE, name, node->token.line);
+            return 0;
+        }
+        if (!symbol->is_initialized) {
+            semantic_error(SEM_ERROR_UNINITIALIZED_VARIABLE, name, node->token.line);
+            return 0;
+        }
+        break;
+    }
+
+    case AST_NUMBER:
+        // Always valid
+        break;
+
+    case AST_FACTORIAL: {
+        result = check_expression(node->left, table);
+        break;
+    }
+
+    default:
+        semantic_error(SEM_ERROR_INVALID_OPERATION, node->token.lexeme, node->token.line);
+        return 0;
+    }
+
+    return result;
+}
 
 char *read_file(const char *filename) {
     FILE *file = fopen(filename, "r");
@@ -306,6 +344,8 @@ int main() {
     if (sem_input) {
         parser_init(sem_input);
         ASTNode *ast = parse();
+
+        print_ast(ast, 0);
 
         int result = analyze_semantics(ast);
         if (result) {

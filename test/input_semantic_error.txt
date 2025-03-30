@@ -1,23 +1,7 @@
 int x;
 int y;
 
-x=x+y;
+x = y;
 
-x = 1;
-
-x=x+z;
-
-if (x) {
-    int a;
-    a = 1;
-}
-
-x=x+a;
-
-int x;
-
-string text;
-
-text = "Hello World!";
-
-x = text;
+int z;
+z = 1;
