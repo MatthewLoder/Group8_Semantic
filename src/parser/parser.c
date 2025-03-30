@@ -351,6 +351,11 @@ static ASTNode *parse_primary(void) {
         advance();
         return node;
     }
+    else if (match(TOKEN_STRING_LITERAL)) {
+        ASTNode *node = create_node(AST_STRING_LITERAL);
+        advance();
+        return node;
+    }
     else if (match(TOKEN_IDENTIFIER)) {
         ASTNode *node = create_node(AST_IDENTIFIER);
         advance();
