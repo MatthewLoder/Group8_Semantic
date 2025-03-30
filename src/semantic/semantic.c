@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define SEMANTIC_INPUT_FILE "test/input_semantic_error.txt"
+
 // Initialize symbol table
 SymbolTable *init_symbol_table() {
     SymbolTable *table = malloc(sizeof(SymbolTable));
@@ -203,8 +205,50 @@ int check_expression(ASTNode *node, SymbolTable *table) {
     return 0;
 }
 
+char *read_file(const char *filename) {
+    FILE *file = fopen(filename, "r");
+    if (!file) {
+      perror("Error opening file");
+      return NULL;
+    }
+  
+    fseek(file, 0, SEEK_END);
+    long length = ftell(file);
+    fseek(file, 0, SEEK_SET);
+  
+    char *buffer = (char *)malloc(length + 1);
+    if (!buffer) {
+      perror("Memory allocation failed");
+      fclose(file);
+      return NULL;
+    }
+  
+    fread(buffer, 1, length, file);
+    buffer[length] = '\0';
+    fclose(file);
+  
+    return buffer;
+}
+
 int main() {
-    printf("Semantic Analysis Example\n");
+    char *sem_input = read_file(SEMANTIC_INPUT_FILE);
+    
+
+
+    if (sem_input) {
+        parser_init(sem_input);
+        ASTNode *valid_ast = parse();
+        
+        int result = analyze_semantics(valid_ast);
+        if (result) {
+            printf("Semantic analysis passed.\n");
+        } else {
+            printf("Semantic analysis failed.\n");
+        }
+
+        free_ast(valid_ast);
+        free(sem_input);
+    }
 
     return 0;
 }
