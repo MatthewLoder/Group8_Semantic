@@ -454,31 +454,31 @@ void free_ast(ASTNode *node) {
 }
 
 //Main function
-int main() {
-    //test both valid and invalid
-    const char *input = "int x;\n" //Valid declaration
-                        "x = 42;\n" //Valid assignment;
-                        "if (1) {\nx = 5;\n}"  //Valid if statement
-                        "while (1) {\nx = 5;\ny = 4;\n}"
-                        "repeat {\nx = 5;\n} until (1);"
-                        "print x;\n"
-                        "y = x + 5;\n"
-                        "if (x == 1) {\nx = 5;\n}"  //Valid if statement
-                        "factorial(4);\n"
-                        "x = (3 + 7) * (10 - 4);"; //Valid assignment;
-    const char *invalid_input = "int x;\n"
-                                "x = 42;\n"
-                                "int ;";
+// int main() {
+//     //test both valid and invalid
+//     const char *input = "int x;\n" //Valid declaration
+//                         "x = 42;\n" //Valid assignment;
+//                         "if (1) {\nx = 5;\n}"  //Valid if statement
+//                         "while (1) {\nx = 5;\ny = 4;\n}"
+//                         "repeat {\nx = 5;\n} until (1);"
+//                         "print x;\n"
+//                         "y = x + 5;\n"
+//                         "if (x == 1) {\nx = 5;\n}"  //Valid if statement
+//                         "factorial(4);\n"
+//                         "x = (3 + 7) * (10 - 4);"; //Valid assignment;
+//     const char *invalid_input = "int x;\n"
+//                                 "x = 42;\n"
+//                                 "int ;";
 
-    printf("Parsing input:\n%s\n", input);
-    parser_init(input);
-    ASTNode *ast = parse();
+//     printf("Parsing input:\n%s\n", input);
+//     parser_init(input);
+//     ASTNode *ast = parse();
 
-    printf("\nAbstract Syntax Tree:\n");
-    print_ast(ast, 0);
-    free_ast(ast);
-    return 0;
-}
+//     printf("\nAbstract Syntax Tree:\n");
+//     print_ast(ast, 0);
+//     free_ast(ast);
+//     return 0;
+// }
 
 // Main function for testing
 // int main() {
