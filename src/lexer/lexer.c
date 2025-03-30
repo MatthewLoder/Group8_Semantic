@@ -115,6 +115,37 @@ void print_token(Token token)
     }
     printf(" | Lexeme: '%s' | Line: %d\n", token.lexeme, token.line);
 }
+int is_operator_char(char c) {
+    switch (c) {
+        case '+':
+        case '-':
+        case '*':
+        case '/':
+            return TOKEN_OPERATOR;
+        case '<':
+        case '>':
+        case '!':
+            return TOKEN_COMPARISON;
+        case '=':
+            return TOKEN_EQUALS;
+        default:
+            return 0;
+    }
+}
+
+int is_delimiter(char c) {
+    switch (c) {
+        case ';':   return TOKEN_SEMICOLON;
+        case '(':   return TOKEN_LPAREN;
+        case ')':   return TOKEN_RPAREN;
+        case '{':   return TOKEN_LBRACE;
+        case '}':   return TOKEN_RBRACE;
+        case '[':   return TOKEN_LBRACK;
+        case ']':   return TOKEN_RBRACK;
+        default:    return 0;
+            
+    }
+}
 
 Token get_next_token(const char *input, int *pos)
 {
@@ -232,68 +263,77 @@ Token get_next_token(const char *input, int *pos)
         return token;
     }
 
-    // Handle operators and delimiters
-    (*pos)++;
-    token.lexeme[0] = c;
-    token.lexeme[1] = '\0';
+    TokenType operator_type = is_operator_char(c);
+    if (operator_type) {
+        int i = 0;
+        token.type = operator_type;
+        token.lexeme[i++] = c;
+        (*pos)++;
+        char next_c = input[*pos];
 
-    switch (c)
-    {
-    case '+':
-    case '-':
-    case '*':
-    case '/':
-        if (last_token_type == 'o')
-        {
+        // raise error for consecutive operators
+        if ((c == '+' || c == '-' || c == '*' || c == '/') && (next_c == '+' || next_c == '-' || next_c == '*' || next_c == '/')) {
+            token.type = TOKEN_ERROR;
             token.error = ERROR_CONSECUTIVE_OPERATORS;
             return token;
         }
-        token.type = TOKEN_OPERATOR;
-        last_token_type = 'o';
-        break;
-    case '=':
-        token.type = TOKEN_EQUALS;
-        break;
-    case ';':
-        token.type = TOKEN_SEMICOLON;
-        break;
-    case '(':
-        token.type = TOKEN_LPAREN;
-        break;
-    case ')':
-        token.type = TOKEN_RPAREN;
-        break;
-    case '{':
-        token.type = TOKEN_LBRACE;
-        break;
-    case '}':
-        token.type = TOKEN_RBRACE;
-        break;
-    default:
-        token.error = ERROR_INVALID_CHAR;
-        break;
+        /* Check for double-character operators (==, !=, etc.) */
+        if (
+            (c == '=' && next_c == '=') ||
+            (c == '!' && next_c == '=') ||
+            (c == '|' && next_c == '|') ||
+            (c == '<' && next_c == '=') ||
+            (c == '>' && next_c == '=') ) {
+            token.lexeme[i++] = next_c;
+            (*pos)++;
+        }
+
+        if (c == '=' && next_c == '=') {
+            token.type = TOKEN_COMPARISON; // or else is token_equals by default
+        }
+
+        token.lexeme[i] = '\0';
+        return token;
     }
+    // TODO: Add delimiter handling here
+    TokenType delimeter_type = is_delimiter(c);
+    if (delimeter_type) {
+        token.type = delimeter_type;
+        token.lexeme[0] = c;
+        token.lexeme[1] = '\0';
+        (*pos)++;
+        return token;
+    }
+    
+
+    // Handle invalid characters
+    token.type = TOKEN_ERROR;
+    token.error = ERROR_INVALID_CHAR;
+    token.lexeme[0] = c;
+    token.lexeme[1] = '\0';
+    (*pos)++;
+    return token;
 
     return token;
 }
 
-int main() {
-    const char *input = "int x = 123;\n"   // Basic declaration and number
-                       "test_var = 456;\n"  // Identifier and assignment
-                       "print x;\n"         // Keyword and identifier
-                       "if (y > 10) {\n"    // Keywords, identifiers, operators
-                       "    @#$ invalid\n"  // Error case
-                       "    x = ++2;\n"     // Consecutive operator error
-                       "}";
+// int main() {
+//     const char *input = "int x = 123;\n"   // Basic declaration and number
+//                        "test_var = 456;\n"  // Identifier and assignment
+//                        "print x;\n"         // Keyword and identifier
+//                        "if (y > 10) {\n"    // Keywords, identifiers, operators
+//                        "    @#$ invalid\n"  // Error case
+//                        "    x = ++2;\n"     // Consecutive operator error
+//                        "}";
 
-    printf("Analyzing input:\n%s\n\n", input);
-    int position = 0;
-    Token token;
+//     printf("Analyzing input:\n%s\n\n", input);
+//     int position = 0;
+//     Token token;
 
-    do {
-        token = get_next_token(input, &position);
-        print_token(token);
-    } while (token.type != TOKEN_EOF);
+//     do {
+//         token = get_next_token(input, &position);
+//         print_token(token);
+//     } while (token.type != TOKEN_EOF);
 
-    return 0;
-}
+//     return 0;
+// }
