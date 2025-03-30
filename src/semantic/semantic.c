@@ -177,3 +177,34 @@ void free_symbol_table(SymbolTable *table) {
     }
     free(table);
 }
+
+void remove_symbols_in_current_scope(SymbolTable *table) {
+    Symbol *current = table->head;
+    Symbol *prev = NULL;
+
+    while (current) {
+        if (current->scope_level == table->current_scope) {
+            if (prev) {
+                prev->next = current->next;
+            } else {
+                table->head = current->next;
+            }
+            free(current);
+            current = (prev) ? prev->next : table->head;
+        } else {
+            prev = current;
+            current = current->next;
+        }
+    }
+}
+
+//check expression temporary for testing
+int check_expression(ASTNode *node, SymbolTable *table) {
+    return 0;
+}
+
+int main() {
+    printf("Semantic Analysis Example\n");
+
+    return 0;
+}
