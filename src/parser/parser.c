@@ -445,7 +445,6 @@ void print_token_stream(const char* input) {
     } while (token.type != TOKEN_EOF);
 }
 
-
 //free memory for ast
 void free_ast(ASTNode *node) {
     if (!node) return;
