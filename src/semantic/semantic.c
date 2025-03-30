@@ -233,22 +233,25 @@ char *read_file(const char *filename) {
 int main() {
     char *sem_input = read_file(SEMANTIC_INPUT_FILE);
     
+    printf("%d\n", sem_input[0]);
+    printf("%d\n", sem_input[1]);
+    printf("%d\n", sem_input[2]);
+    printf("%d\n", sem_input[4]);
 
-
-    if (sem_input) {
-        parser_init(sem_input);
-        ASTNode *valid_ast = parse();
+    // if (sem_input) {
+    //     parser_init(sem_input);
+    //     ASTNode *ast = parse();
         
-        int result = analyze_semantics(valid_ast);
-        if (result) {
-            printf("Semantic analysis passed.\n");
-        } else {
-            printf("Semantic analysis failed.\n");
-        }
+    //     int result = analyze_semantics(ast);
+    //     if (result) {
+    //         printf("Semantic analysis passed.\n");
+    //     } else {
+    //         printf("Semantic analysis failed.\n");
+    //     }
 
-        free_ast(valid_ast);
-        free(sem_input);
-    }
+    //     free_ast(ast);
+    //     free(sem_input);
+    // }
 
     return 0;
 }
