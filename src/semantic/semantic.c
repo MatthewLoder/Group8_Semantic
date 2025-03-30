@@ -167,3 +167,13 @@ void exit_scope(SymbolTable *table) {
     table->current_scope--;
     remove_symbols_in_current_scope(table);
 }
+
+void free_symbol_table(SymbolTable *table) {
+    Symbol *current = table->head;
+    while (current) {
+        Symbol *temp = current;
+        current = current->next;
+        free(temp);
+    }
+    free(table);
+}
