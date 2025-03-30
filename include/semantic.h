@@ -75,6 +75,9 @@ int check_program(ASTNode *node, SymbolTable *table);
 // Check statement node
 int check_statement(ASTNode *node, SymbolTable *table);
 
+// Check assignment node
+int check_assignment(ASTNode *node, SymbolTable *table);
+
 typedef enum {
     SEM_ERROR_NONE,
     SEM_ERROR_UNDECLARED_VARIABLE,

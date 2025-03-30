@@ -87,7 +87,49 @@ int check_program(ASTNode *node, SymbolTable *table) {
 }
 
 // Check statement node
-int check_statement(ASTNode *node, SymbolTable *Table) { return -1; }
+int check_statement(ASTNode *node, SymbolTable *table) {
+    if (!node)
+        return 1;
+
+    int result = 1;
+
+    switch (node->type) {
+    case AST_VARDECL:
+        check_declaration(node, table);
+        break;
+    case AST_ASSIGN:
+        check_assignment(node, table);
+        break;
+    case AST_IF:
+        check_expression(node->left, table);
+        check_statement(node->right, table);
+        break;
+    case AST_PRINT:
+        check_expression(node, table);
+    case AST_WHILE:
+        check_expression(node->left, table);
+        check_statement(node->right, table);
+        break;
+    case AST_REPEAT: // TODO: come back to this
+        check_expression(node->left, table);
+        check_statement(node->right, table);
+        break;
+    case AST_BLOCK:
+        enter_scope(table);
+        check_statement(node->left, table);
+        exit_scope(table);
+        break;
+    case AST_FACTORIAL:
+        check_expression(node, table);
+        break;
+    default:
+        semantic_error(SEM_ERROR_SEMANTIC_ERROR, "Unknown Statement",
+                       node->token.line);
+        return 1;
+    }
+
+    return 0;
+}
 
 // Check declaration node
 int check_declaration(ASTNode *node, SymbolTable *table) {
@@ -157,23 +199,4 @@ void semantic_error(SemanticErrorType error, const char *name, int line) {
     default:
         printf("Unknown semantic error with '%s'\n", name);
     }
-}
-
-void enter_scope(SymbolTable *table) {
-    table->current_scope++;
-}
-
-void exit_scope(SymbolTable *table) {
-    table->current_scope--;
-    remove_symbols_in_current_scope(table);
-}
-
-void free_symbol_table(SymbolTable *table) {
-    Symbol *current = table->head;
-    while (current) {
-        Symbol *temp = current;
-        current = current->next;
-        free(temp);
-    }
-    free(table);
 }
