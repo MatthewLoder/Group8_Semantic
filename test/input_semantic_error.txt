@@ -3,17 +3,21 @@ int y;
 
 x=x+y;
 
+x = 1;
+
 x=x+z;
 
-int function() {
+if (x) {
     int a;
     a = 1;
-    return 1;
 }
 
 x=x+a;
 
 int x;
 
-float y;
+string text;
 
+text = "Hello World!";
+
+x = text;
