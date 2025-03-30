@@ -164,8 +164,8 @@ void enter_scope(SymbolTable *table) {
 }
 
 void exit_scope(SymbolTable *table) {
-    table->current_scope--;
     remove_symbols_in_current_scope(table);
+    table->current_scope--;
 }
 
 void free_symbol_table(SymbolTable *table) {
