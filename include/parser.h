@@ -11,6 +11,7 @@ typedef enum {
     AST_ASSIGN,         // Assignment (x = 5)
     AST_PRINT,          // Print statement
     AST_NUMBER,         // Number literal
+    AST_STRING_LITERAL,  // String literal
     AST_IDENTIFIER,     // Variable name
     AST_IF,
     AST_CONDITION,
@@ -20,7 +21,6 @@ typedef enum {
     AST_FACTORIAL,
     AST_BINOP,
     AST_COMPARISON
-    // TODO: Add more node types as needed
 } ASTNodeType;
 
 typedef enum {
