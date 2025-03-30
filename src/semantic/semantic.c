@@ -74,7 +74,7 @@ int check_program(ASTNode *node, SymbolTable *table) {
 
     if (node->type == AST_PROGRAM) {
         // Check left child (statement)
-        if (node->left) {
+        if (node->next) {
             result = check_statement(node->left, table) && result;
         }
 
@@ -283,6 +283,14 @@ int main() {
     if (sem_input) {
         parser_init(sem_input);
         ASTNode *ast = parse();
+
+        // print_ast(ast, 0);
+
+        // if (ast->right == NULL) {
+        //     printf("null pointer\n");
+        //     return 0;
+        // }
+        // printf("%s", (char*) ast->left->type);
         
         int result = analyze_semantics(ast);
         if (result) {
