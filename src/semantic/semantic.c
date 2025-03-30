@@ -89,7 +89,49 @@ int check_program(ASTNode *node, SymbolTable *table) {
 }
 
 // Check statement node
-int check_statement(ASTNode *node, SymbolTable *Table) { return -1; }
+int check_statement(ASTNode *node, SymbolTable *table) {
+    if (!node)
+        return 1;
+
+    int result = 1;
+
+    switch (node->type) {
+    case AST_VARDECL:
+        check_declaration(node, table);
+        break;
+    case AST_ASSIGN:
+        check_assignment(node, table);
+        break;
+    case AST_IF:
+        check_expression(node->left, table);
+        check_statement(node->right, table);
+        break;
+    case AST_PRINT:
+        check_expression(node, table);
+    case AST_WHILE:
+        check_expression(node->left, table);
+        check_statement(node->right, table);
+        break;
+    case AST_REPEAT: // TODO: come back to this
+        check_expression(node->left, table);
+        check_statement(node->right, table);
+        break;
+    case AST_BLOCK:
+        enter_scope(table);
+        check_statement(node->left, table);
+        exit_scope(table);
+        break;
+    case AST_FACTORIAL:
+        check_expression(node, table);
+        break;
+    default:
+        semantic_error(SEM_ERROR_SEMANTIC_ERROR, "Unknown Statement",
+                       node->token.line);
+        return 1;
+    }
+
+    return 0;
+}
 
 // Check declaration node
 int check_declaration(ASTNode *node, SymbolTable *table) {
@@ -161,9 +203,7 @@ void semantic_error(SemanticErrorType error, const char *name, int line) {
     }
 }
 
-void enter_scope(SymbolTable *table) {
-    table->current_scope++;
-}
+void enter_scope(SymbolTable *table) { table->current_scope++; }
 
 void exit_scope(SymbolTable *table) {
     remove_symbols_in_current_scope(table);
@@ -200,33 +240,31 @@ void remove_symbols_in_current_scope(SymbolTable *table) {
     }
 }
 
-//check expression temporary for testing
-int check_expression(ASTNode *node, SymbolTable *table) {
-    return 0;
-}
+// check expression temporary for testing
+int check_expression(ASTNode *node, SymbolTable *table) { return 0; }
 
 char *read_file(const char *filename) {
     FILE *file = fopen(filename, "r");
     if (!file) {
-      perror("Error opening file");
-      return NULL;
+        perror("Error opening file");
+        return NULL;
     }
-  
+
     fseek(file, 0, SEEK_END);
     long length = ftell(file);
     fseek(file, 0, SEEK_SET);
-  
+
     char *buffer = (char *)malloc(length + 1);
     if (!buffer) {
-      perror("Memory allocation failed");
-      fclose(file);
-      return NULL;
+        perror("Memory allocation failed");
+        fclose(file);
+        return NULL;
     }
-  
+
     fread(buffer, 1, length, file);
     buffer[length] = '\0';
     fclose(file);
-  
+
     return buffer;
 }
 
