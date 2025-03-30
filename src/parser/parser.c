@@ -291,7 +291,7 @@ static ASTNode *parse_binop(void) {
 
 //Parse statement
 static ASTNode *parse_statement(void) {
-    if (match(TOKEN_INT) || match(TOKEN_FLOAT) || match(TOKEN_CHAR))    return parse_declaration();
+    if (match(TOKEN_INT) || match(TOKEN_FLOAT) || match(TOKEN_CHAR) || match(TOKEN_STRING))    return parse_declaration();
     else if (match(TOKEN_IDENTIFIER))   return parse_assignment();
     else if (match(TOKEN_LBRACE))   return parse_block();
     else if (match(TOKEN_IF))   return parse_if_statement();
