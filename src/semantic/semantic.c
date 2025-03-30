@@ -90,8 +90,7 @@ int check_program(ASTNode *node, SymbolTable *table) {
     if (node->type == AST_PROGRAM) {
         printf("program node found\n");
         // Check left child (statement)
-        if (node->left) {
-            printf("left node found\n");
+        if (node->next) {
             result = check_statement(node->left, table) && result;
         }
 
@@ -303,6 +302,17 @@ int main() {
         parser_init(sem_input);
         ASTNode *ast = parse();
 
+<<<<<<< HEAD
+=======
+        // print_ast(ast, 0);
+
+        // if (ast->right == NULL) {
+        //     printf("null pointer\n");
+        //     return 0;
+        // }
+        // printf("%s", (char*) ast->left->type);
+        
+>>>>>>> c5c34d9ff3e3eeb8dbae502a60f12bba93b71ebd
         int result = analyze_semantics(ast);
         if (result) {
             printf("Semantic analysis passed.\n");
