@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define SEMANTIC_INPUT_FILE "test/input_semantic_error.txt"
+
 // Initialize symbol table
 SymbolTable *init_symbol_table() {
     SymbolTable *table = malloc(sizeof(SymbolTable));
@@ -199,4 +201,90 @@ void semantic_error(SemanticErrorType error, const char *name, int line) {
     default:
         printf("Unknown semantic error with '%s'\n", name);
     }
+}
+
+void enter_scope(SymbolTable *table) { table->current_scope++; }
+
+void exit_scope(SymbolTable *table) {
+    remove_symbols_in_current_scope(table);
+    table->current_scope--;
+}
+
+void free_symbol_table(SymbolTable *table) {
+    Symbol *current = table->head;
+    while (current) {
+        Symbol *temp = current;
+        current = current->next;
+        free(temp);
+    }
+    free(table);
+}
+
+void remove_symbols_in_current_scope(SymbolTable *table) {
+    Symbol *current = table->head;
+    Symbol *prev = NULL;
+
+    while (current) {
+        if (current->scope_level == table->current_scope) {
+            if (prev) {
+                prev->next = current->next;
+            } else {
+                table->head = current->next;
+            }
+            free(current);
+            current = (prev) ? prev->next : table->head;
+        } else {
+            prev = current;
+            current = current->next;
+        }
+    }
+}
+
+// check expression temporary for testing
+int check_expression(ASTNode *node, SymbolTable *table) { return 0; }
+
+char *read_file(const char *filename) {
+    FILE *file = fopen(filename, "r");
+    if (!file) {
+        perror("Error opening file");
+        return NULL;
+    }
+
+    fseek(file, 0, SEEK_END);
+    long length = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    char *buffer = (char *)malloc(length + 1);
+    if (!buffer) {
+        perror("Memory allocation failed");
+        fclose(file);
+        return NULL;
+    }
+
+    fread(buffer, 1, length, file);
+    buffer[length] = '\0';
+    fclose(file);
+
+    return buffer;
+}
+
+int main() {
+    char *sem_input = read_file(SEMANTIC_INPUT_FILE);
+
+    if (sem_input) {
+        parser_init(sem_input);
+        ASTNode *valid_ast = parse();
+
+        int result = analyze_semantics(valid_ast);
+        if (result) {
+            printf("Semantic analysis passed.\n");
+        } else {
+            printf("Semantic analysis failed.\n");
+        }
+
+        free_ast(valid_ast);
+        free(sem_input);
+    }
+
+    return 0;
 }
