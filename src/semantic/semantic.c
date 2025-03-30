@@ -264,6 +264,16 @@ char *read_file(const char *filename) {
     buffer[length] = '\0';
     fclose(file);
 
+    //remove carriagre returns, keep only \n
+    char *src = buffer, *dst = buffer;
+    while (*src) {
+        if (*src != '\r') {
+            *dst++ = *src;
+        }
+        src++;
+    }
+    *dst = '\0';
+
     return buffer;
 }
 
@@ -272,16 +282,16 @@ int main() {
 
     if (sem_input) {
         parser_init(sem_input);
-        ASTNode *valid_ast = parse();
-
-        int result = analyze_semantics(valid_ast);
+        ASTNode *ast = parse();
+        
+        int result = analyze_semantics(ast);
         if (result) {
             printf("Semantic analysis passed.\n");
         } else {
             printf("Semantic analysis failed.\n");
         }
 
-        free_ast(valid_ast);
+        free_ast(ast);
         free(sem_input);
     }
 
