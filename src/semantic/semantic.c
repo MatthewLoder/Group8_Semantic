@@ -158,3 +158,12 @@ void semantic_error(SemanticErrorType error, const char *name, int line) {
         printf("Unknown semantic error with '%s'\n", name);
     }
 }
+
+void enter_scope(SymbolTable *table) {
+    table->current_scope++;
+}
+
+void exit_scope(SymbolTable *table) {
+    remove_symbols_in_current_scope(table);
+    table->current_scope--;
+}
