@@ -91,7 +91,7 @@ int check_program(ASTNode *node, SymbolTable *table) {
         printf("program node found\n");
         // Check left child (statement)
         if (node->next) {
-            result = check_program(node->left, table) && result;
+            result = check_program(node->next, table) && result;
         }
 
         if (node->left) {
