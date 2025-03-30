@@ -1,2 +1,19 @@
-a
-b
+int x;
+int y;
+
+x=x+y;
+
+x=x+z;
+
+int function() {
+    int a;
+    a = 1;
+    return 1;
+}
+
+x=x+a;
+
+int x;
+
+float y;
+

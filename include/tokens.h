@@ -32,6 +32,7 @@ typedef enum
     TOKEN_INT,              // int 
     TOKEN_FLOAT,            // float
     TOKEN_CHAR,             // char
+    TOKEN_STRING,           // string
     TOKEN_EOF,              // End Of File
     TOKEN_ERROR             // Generic error token
 } TokenType;

@@ -12,11 +12,12 @@ static int current_line = 1;
 static char last_token_type = 'x';
 
 // Keywords table
-static struct
-{
+static struct {
     const char *word;
     TokenType type;
-} keywords[] = {
+} 
+
+keywords[] = {
     {"if", TOKEN_IF},
     {"int", TOKEN_INT},
     {"print", TOKEN_PRINT},
@@ -31,7 +32,9 @@ static struct
     {"void", TOKEN_VOID},
     {"float", TOKEN_FLOAT},
     {"char", TOKEN_CHAR},
-    {"const", TOKEN_CONST},};
+    {"const", TOKEN_CONST},
+    {"string", TOKEN_STRING}
+};
 
 static int is_keyword(const char *word)
 {
@@ -316,24 +319,3 @@ Token get_next_token(const char *input, int *pos)
 
     return token;
 }
-
-// int main() {
-//     const char *input = "int x = 123;\n"   // Basic declaration and number
-//                        "test_var = 456;\n"  // Identifier and assignment
-//                        "print x;\n"         // Keyword and identifier
-//                        "if (y > 10) {\n"    // Keywords, identifiers, operators
-//                        "    @#$ invalid\n"  // Error case
-//                        "    x = ++2;\n"     // Consecutive operator error
-//                        "}";
-
-//     printf("Analyzing input:\n%s\n\n", input);
-//     int position = 0;
-//     Token token;
-
-//     do {
-//         token = get_next_token(input, &position);
-//         print_token(token);
-//     } while (token.type != TOKEN_EOF);
-
-//     return 0;
-// }
