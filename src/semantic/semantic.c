@@ -266,41 +266,37 @@ int check_expression(ASTNode *node, SymbolTable *table) {
         }
 
         //binary operations and comparisions
-        case AST_BINOP:
+        case AST_BINOP: {
             result = check_expression(node->left, table) && check_expression(node->right, table);
-
-            VarType left_type, right_type;
-
+            
+            //defaults to int, because any number can work with any other number
+            VarType left_type = TYPE_INT;
+            VarType right_type = TYPE_INT;
+        
             if (node->left->type == AST_IDENTIFIER) {
                 Symbol *sym = lookup_symbol(table, node->left->token.lexeme);
-                left_type = sym->type;
+                if (sym) left_type = sym->type;
             } else if (node->left->type == AST_STRING_LITERAL) {
                 left_type = TYPE_STRING;
-            } else {
-                //this is if it is a number
-                //this is okay because all number types are allowed all operations with each other
-                left_type = TYPE_INT;
             }
-
+        
             if (node->right->type == AST_IDENTIFIER) {
                 Symbol *sym = lookup_symbol(table, node->right->token.lexeme);
-                right_type = sym->type;
+                if (sym) right_type = sym->type;
             } else if (node->right->type == AST_STRING_LITERAL) {
                 right_type = TYPE_STRING;
-            } else {
-                //this is if it is a number
-                //this is okay because all number types are allowed all operations with each other
-                right_type = TYPE_INT;
             }
-
-            //check for compatibility of types
+        
+            // Handle string compatibility
             if (left_type == TYPE_STRING || right_type == TYPE_STRING) {
-                if (left_type == TYPE_STRING && right_type == TYPE_STRING && strcmp(node->token.lexeme, "+") != 0) {
-                    //only adding string is okay
+                if (!(left_type == TYPE_STRING && right_type == TYPE_STRING && strcmp(node->token.lexeme, "+") == 0)) {
                     semantic_error(SEM_ERROR_TYPE_MISMATCH, node->token.lexeme, node->token.line);
                     result = 0;
+                }
             }
+        
             break;
+        }
 
         case AST_COMPARISON:
             result = check_expression(node->left, table) && check_expression(node->right, table);
@@ -309,7 +305,6 @@ int check_expression(ASTNode *node, SymbolTable *table) {
         default:
             semantic_error(SEM_ERROR_INVALID_OPERATION, node->token.lexeme, node->token.line);
             return 0;
-        }
     }
 
     printf("Checked expression: %s, Result: %d\n", node->token.lexeme, result);
