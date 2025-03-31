@@ -159,22 +159,80 @@ int check_assignment(ASTNode *node, SymbolTable *table) {
 
     const char *name = node->left->token.lexeme;
 
-    // Check if variable exists
     Symbol *symbol = lookup_symbol(table, name);
     if (!symbol) {
         semantic_error(SEM_ERROR_UNDECLARED_VARIABLE, name, node->token.line);
         return 0;
     }
 
-    // Check expression
+    //check expression
     int expr_valid = check_expression(node->right, table);
+    if (!expr_valid) return 0;
 
-    // Mark as initialized
-    if (expr_valid) {
-        symbol->is_initialized = 1;
+    //assume number since they are allowed to interchange using implicit conversion
+    VarType expr_type = TYPE_INT;
+
+    ASTNode *expr = node->right;
+    if (expr->type == AST_IDENTIFIER) {
+        Symbol *sym = lookup_symbol(table, expr->token.lexeme);
+        if (sym) expr_type = sym->type;
+    } else if (expr->type == AST_STRING_LITERAL) {
+        expr_type = TYPE_STRING;
+    } else if (expr->type == AST_NUMBER) {
+        expr_type = TYPE_INT;
+    } else if (expr->type == AST_BINOP) {
+        //handle binops
+        VarType left_type = TYPE_INT, right_type = TYPE_INT;
+
+        if (expr->left->type == AST_IDENTIFIER) {
+            Symbol *sym = lookup_symbol(table, expr->left->token.lexeme);
+            if (sym) left_type = sym->type;
+        } else if (expr->left->type == AST_STRING_LITERAL) {
+            left_type = TYPE_STRING;
+        } else if (expr->left->type == AST_NUMBER) {
+            left_type = TYPE_INT;
+        }
+
+        if (expr->right->type == AST_IDENTIFIER) {
+            Symbol *sym = lookup_symbol(table, expr->right->token.lexeme);
+            if (sym) right_type = sym->type;
+        } else if (expr->right->type == AST_STRING_LITERAL) {
+            right_type = TYPE_STRING;
+        } else if (expr->right->type == AST_NUMBER) {
+            right_type = TYPE_INT;
+        }
+
+        if (left_type == TYPE_STRING || right_type == TYPE_STRING) {
+            if (left_type == TYPE_STRING && right_type == TYPE_STRING &&
+                strcmp(expr->token.lexeme, "+") == 0) {
+                expr_type = TYPE_STRING; //string + string
+            } else {
+                semantic_error(SEM_ERROR_TYPE_MISMATCH, expr->token.lexeme, expr->token.line);
+                return 0;
+            }
+        } else {
+            //number ops are allowed to interchange (int float and char)
+            expr_type = TYPE_INT;
+        }
     }
 
-    return expr_valid;
+    //check if type is compatible with the variable type
+    VarType var_type = symbol->type;
+
+    if (var_type == TYPE_STRING) {
+        if (expr_type != TYPE_STRING) {
+            semantic_error(SEM_ERROR_TYPE_MISMATCH, name, node->token.line);
+            return 0;
+        }
+    } else {
+        if (expr_type == TYPE_STRING) {
+            semantic_error(SEM_ERROR_TYPE_MISMATCH, name, node->token.line);
+            return 0;
+        }
+    }
+
+    symbol->is_initialized = 1;
+    return 1;
 }
 
 void semantic_error(SemanticErrorType error, const char *name, int line) {
@@ -313,7 +371,7 @@ int check_expression(ASTNode *node, SymbolTable *table) {
             return 0;
     }
 
-    printf("Checked expression: %s, Result: %d\n", node->token.lexeme, result);
+    // printf("Checked expression: %s, Result: %d\n", node->token.lexeme, result);
 
     return result;
 }
