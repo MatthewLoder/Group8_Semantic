@@ -12,4 +12,8 @@ while (x) {
     int b;
 }
 
+repeat {
+    x = 1;
+} until (x == 0);
+
 y = y + x;
