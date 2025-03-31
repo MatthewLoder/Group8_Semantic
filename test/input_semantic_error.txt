@@ -1,7 +1,16 @@
 int x;
 int y;
 
-x = y;
+x = 0;
+
+if (x) {
+    int a;
+    b = 1;
+}
+
+while (x) {
+    int b;
+}
 
 int z;
 z = 1;

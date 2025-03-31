@@ -83,47 +83,53 @@ int check_program(ASTNode *node, SymbolTable *table) {
 
 // Check statement node
 int check_statement(ASTNode *node, SymbolTable *table) {
+    if (!node)
+        return 1;
+
     int result = 1;
 
-    while (node) {
-        switch (node->type) {
-            case AST_VARDECL:
-                result = check_declaration(node, table) && result;
-                break;
-            case AST_ASSIGN:
-                result = check_assignment(node, table) && result;
-                break;
-            case AST_IF:
-                result = check_expression(node->left, table) && result;
-                result = check_statement(node->right, table) && result;
-                result = check_statement(node->next, table) && result;
-                break;
-            case AST_WHILE:
-                result = check_expression(node->left, table) && result;
-                result = check_statement(node->right, table) && result;
-                break;
-            case AST_REPEAT:
-                result = check_statement(node->left, table) && result;
-                result = check_expression(node->right, table) && result;
-                break;
-            case AST_BLOCK:
-                enter_scope(table);
-                result = check_statement(node->left, table) && result;
-                exit_scope(table);
-                break;
-            case AST_PRINT:
-            case AST_FACTORIAL:
-                result = check_expression(node, table) && result;
-                break;
-            default:
-                semantic_error(SEM_ERROR_SEMANTIC_ERROR, "Unknown statement", node->token.line);
-                result = 0;
-                break;
-        }
+    switch (node->type) {
+    case AST_VARDECL:
+        check_declaration(node, table);
+        check_statement(node->next, table);
+        break;
+    case AST_ASSIGN:
+        check_assignment(node, table);
+        check_statement(node->next, table);
+        break;
+    case AST_IF:
+        check_expression(node->left, table);
+        check_statement(node->right, table);
+        check_statement(node->next, table);
+        break;
+    case AST_PRINT:
+        check_expression(node, table);
+        break;
+    case AST_WHILE:
+        check_expression(node->left, table);
+        check_statement(node->right, table);
+        check_statement(node->next, table);
+        break;
+    case AST_REPEAT: // TODO: come back to this
+        check_expression(node->left, table);
+        check_statement(node->right, table);
+        break;
+    case AST_BLOCK:
+        enter_scope(table);
+        check_statement(node->next, table);
+        exit_scope(table);
+        break;
+    case AST_FACTORIAL:
+        check_expression(node, table);
+        break;
+    default:
+        semantic_error(SEM_ERROR_SEMANTIC_ERROR, "Unknown Statement", node->token.line);
+        return 1;
     }
 
-    return result;
+    return 0;
 }
+
 
 // Check declaration node
 int check_declaration(ASTNode *node, SymbolTable *table) {
