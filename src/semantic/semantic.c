@@ -17,7 +17,7 @@ SymbolTable *init_symbol_table() {
 }
 
 // Add symbol to table
-void add_symbol(SymbolTable *table, const char *name, int type, int line) {
+void add_symbol(SymbolTable *table, const char *name, VarType type, int line) {
     Symbol *symbol = malloc(sizeof(Symbol));
     if (symbol) {
         strcpy(symbol->name, name);
@@ -29,6 +29,8 @@ void add_symbol(SymbolTable *table, const char *name, int type, int line) {
         // Add to beginning of list
         symbol->next = table->head;
         table->head = symbol;
+
+        printf("Added symbol: %s, Type: %s, Scope: %d, Line: %d\n", name, var_type_to_string(type), table->current_scope, line);
     }
 }
 
@@ -57,23 +59,10 @@ Symbol *lookup_symbol_current_scope(SymbolTable *table, const char *name) {
     return NULL;
 }
 
-int printSymbolTable(SymbolTable *table) {
-    printf("Printing Symbol Table:\n");
-    
-    Symbol *current = table->head;
-    while (current) {
-        printf("Name: %s, Type: %d, Scope: %d, Line: %d\n", current->name,
-               current->type, current->scope_level, current->line_declared);
-        current = current->next;
-    }
-    return 0;
-}
-
 // Analyze AST semantically
 int analyze_semantics(ASTNode *ast) {
     SymbolTable *table = init_symbol_table();
     int result = check_program(ast, table);
-    printSymbolTable(table);
     free_symbol_table(table);
     return result;
 }
@@ -85,28 +74,8 @@ int check_program(ASTNode *node, SymbolTable *table) {
 
     int result = 1;
 
-    printf("Checking program node\n");
-
     if (node->type == AST_PROGRAM) {
-        printf("program node found\n");
-<<<<<<< HEAD
-=======
-        // Check left child (statement)
-        printf("left node found\n");
->>>>>>> be8644cf52d05fb248c1a82e5c6ecad18014022f
-        if (node->next) {
-            result = check_statement(node->next, table) && result;
-        }
-
-        if (node->left) {
-            printf("left node found\n");
-            result = check_statement(node->left, table) && result;
-        }
-
-        if (node->right) {
-            printf("right node found\n");
-            result = check_statement(node->right, table) && result;
-        }
+        result = check_statement(node->next, table) && result;
     }
 
     return result;
@@ -176,7 +145,7 @@ int check_declaration(ASTNode *node, SymbolTable *table) {
     }
 
     // Add to symbol table
-    add_symbol(table, name, TOKEN_INT, node->token.line);
+    add_symbol(table, name, node->var_type, node->token.line);
     return 1;
 }
 
@@ -289,14 +258,22 @@ int check_expression(ASTNode *node, SymbolTable *table) {
         break;
     }
 
+    case AST_STRING_LITERAL:
     case AST_NUMBER:
-        // Always valid
+        // Literals are always valid
         break;
 
+    //factorial function
     case AST_FACTORIAL: {
         result = check_expression(node->left, table);
         break;
     }
+
+    //binary operations and comparisions
+    case AST_BINOP:
+    case AST_COMPARISON:
+        result = check_expression(node->left, table) && check_expression(node->right, table);
+        break;
 
     default:
         semantic_error(SEM_ERROR_INVALID_OPERATION, node->token.lexeme, node->token.line);
@@ -348,7 +325,7 @@ int main() {
         parser_init(sem_input);
         ASTNode *ast = parse();
 
-        print_ast(ast, 0);
+        // print_ast(ast, 0);
 
         int result = analyze_semantics(ast);
         if (result) {
