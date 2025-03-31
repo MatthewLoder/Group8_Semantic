@@ -90,44 +90,44 @@ int check_statement(ASTNode *node, SymbolTable *table) {
 
     switch (node->type) {
     case AST_VARDECL:
-        check_declaration(node, table);
-        check_statement(node->next, table);
+        result = check_declaration(node, table) && result;
+        result = check_statement(node->next, table) && result;
         break;
     case AST_ASSIGN:
-        check_assignment(node, table);
-        check_statement(node->next, table);
+        result = check_assignment(node, table) && result;
+        result = check_statement(node->next, table) && result;
         break;
     case AST_IF:
-        check_expression(node->left, table);
-        check_statement(node->right, table);
-        check_statement(node->next, table);
+        result = check_expression(node->left, table) && result;
+        result = check_statement(node->right, table) && result;
+        result = check_statement(node->next, table) && result;
         break;
     case AST_PRINT:
-        check_expression(node, table);
+        result = check_expression(node, table) && result;
         break;
     case AST_WHILE:
-        check_expression(node->left, table);
-        check_statement(node->right, table);
-        check_statement(node->next, table);
+        result = check_expression(node->left, table) && result;
+        result = check_statement(node->right, table) && result;
+        result = check_statement(node->next, table) && result;
         break;
     case AST_REPEAT: // TODO: come back to this
-        check_expression(node->left, table);
-        check_statement(node->right, table);
+        result = check_expression(node->left, table) && result;
+        result = check_statement(node->right, table) && result;
         break;
     case AST_BLOCK:
         enter_scope(table);
-        check_statement(node->next, table);
+        result = check_statement(node->next, table) && result;
         exit_scope(table);
         break;
     case AST_FACTORIAL:
-        check_expression(node, table);
+        result = check_expression(node, table) && result;
         break;
     default:
         semantic_error(SEM_ERROR_SEMANTIC_ERROR, "Unknown Statement", node->token.line);
-        return 1;
+        return 0;
     }
 
-    return 0;
+    return result;
 }
 
 
