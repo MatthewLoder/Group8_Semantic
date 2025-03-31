@@ -78,8 +78,19 @@ static ASTNode *create_node(ASTNodeType type) {
         node->token = current_token;
         node->left = NULL;
         node->right = NULL;
-        node->next = NULL;
+        node->next = NULL;  
     }
+
+    if (type == AST_VARDECL) {
+        switch (current_token.type) {
+            case TOKEN_INT: node->var_type = TYPE_INT; break;
+            case TOKEN_CHAR: node->var_type = TYPE_CHAR; break;
+            case TOKEN_FLOAT: node->var_type = TYPE_FLOAT; break; 
+            case TOKEN_STRING: node->var_type = TYPE_STRING; break;
+            default: break;
+        }
+    }
+
     return node;
 }
 
@@ -392,6 +403,54 @@ ASTNode *parse(void) {
     return parse_program();
 }
 
+//debug function
+const char* token_type_to_string(TokenType type) {
+    switch (type) {
+        case TOKEN_NUMBER: return "NUMBER";
+        case TOKEN_IDENTIFIER: return "IDENTIFIER";
+        case TOKEN_STRING_LITERAL: return "STRING_LITERAL";
+        case TOKEN_OPERATOR: return "OPERATOR";
+        case TOKEN_COMPARISON: return "COMPARISON";
+        case TOKEN_EQUALS: return "EQUALS";
+        case TOKEN_SEMICOLON: return "SEMICOLON";
+        case TOKEN_LPAREN: return "LPAREN";
+        case TOKEN_RPAREN: return "RPAREN";
+        case TOKEN_LBRACE: return "LBRACE";
+        case TOKEN_RBRACE: return "RBRACE";
+        case TOKEN_LBRACK: return "LBRACK";
+        case TOKEN_RBRACK: return "RBRACK";
+        case TOKEN_IF: return "IF";
+        case TOKEN_ELSE: return "ELSE";
+        case TOKEN_REPEAT: return "REPEAT";
+        case TOKEN_UNTIL: return "UNTIL";
+        case TOKEN_FOR: return "FOR";
+        case TOKEN_WHILE: return "WHILE";
+        case TOKEN_BREAK: return "BREAK";
+        case TOKEN_PRINT: return "PRINT";
+        case TOKEN_FACTORIAL: return "FACTORIAL";
+        case TOKEN_RETURN: return "RETURN";
+        case TOKEN_VOID: return "VOID";
+        case TOKEN_CONST: return "CONST";
+        case TOKEN_INT: return "INT";
+        case TOKEN_FLOAT: return "FLOAT";
+        case TOKEN_CHAR: return "CHAR";
+        case TOKEN_STRING: return "STRING";
+        case TOKEN_EOF: return "EOF";
+        case TOKEN_ERROR: return "ERROR";
+        default: return "UNKNOWN";
+    }
+}
+
+const char* var_type_to_string(VarType type) {
+    switch (type) {
+        case TYPE_INT: return "int";
+        case TYPE_CHAR: return "char";
+        case TYPE_FLOAT: return "float";
+        case TYPE_STRING: return "string";
+        default: return "unknown";
+    }
+}
+
 //print AST tree
 void print_ast(ASTNode *node, int level) {
     if (!node) return;
@@ -400,7 +459,7 @@ void print_ast(ASTNode *node, int level) {
     
     switch (node->type) {
         case AST_PROGRAM:       printf("Program\n"); break;
-        case AST_VARDECL:       printf("VarDecl: %s\n", lexeme); break;
+        case AST_VARDECL:       printf("VarDecl: %s, Type: %s\n", lexeme, var_type_to_string(node->var_type)); break;
         case AST_ASSIGN:        printf("Assign\n"); break;
         case AST_NUMBER:        printf("Number: %s\n", lexeme); break;
         case AST_IDENTIFIER:    printf("Identifier: %s\n", lexeme); break;

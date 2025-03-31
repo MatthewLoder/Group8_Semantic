@@ -41,6 +41,13 @@ typedef enum {
     PARSE_ERROR_INVALID_COMPARISON,
 } ParseError;
 
+typedef enum {
+    TYPE_INT,
+    TYPE_CHAR,
+    TYPE_FLOAT,
+    TYPE_STRING
+} VarType;
+
 // AST Node structure
 typedef struct ASTNode {
     ASTNodeType type;           // Type of node
@@ -48,7 +55,7 @@ typedef struct ASTNode {
     struct ASTNode* left;      // Left child
     struct ASTNode* right;     // Right child
     struct ASTNode* next;
-    // TODO: Add more fields if needed
+    VarType var_type;         // Variable type (if applicable)
 } ASTNode;
 
 // Parser functions
