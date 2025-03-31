@@ -104,6 +104,7 @@ int check_statement(ASTNode *node, SymbolTable *table) {
         break;
     case AST_PRINT:
         result = check_expression(node, table) && result;
+        result = check_statement(node->next, table);
         break;
     case AST_WHILE:
         result = check_expression(node->left, table) && result;
@@ -113,6 +114,7 @@ int check_statement(ASTNode *node, SymbolTable *table) {
     case AST_REPEAT: // TODO: come back to this
         result = check_expression(node->left, table) && result;
         result = check_statement(node->right, table) && result;
+        result = check_statement(node->next, table) && result;
         break;
     case AST_BLOCK:
         enter_scope(table);
@@ -121,6 +123,7 @@ int check_statement(ASTNode *node, SymbolTable *table) {
         break;
     case AST_FACTORIAL:
         result = check_expression(node, table) && result;
+        result = check_statement(node->next, table);
         break;
     default:
         semantic_error(SEM_ERROR_SEMANTIC_ERROR, "Unknown Statement", node->token.line);
@@ -418,7 +421,7 @@ int main() {
         parser_init(sem_input);
         ASTNode *ast = parse();
 
-        // print_ast(ast, 0);
+        print_ast(ast, 0);
 
         int result = analyze_semantics(ast);
 
