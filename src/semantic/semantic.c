@@ -365,9 +365,38 @@ int check_expression(ASTNode *node, SymbolTable *table) {
             break;
         }
 
-        case AST_COMPARISON:
-            result = check_expression(node->left, table) && check_expression(node->right, table);
+        case AST_CONDITION:
+            result = check_expression(node->left, table);
             break;
+
+            case AST_COMPARISON: {
+                result = check_expression(node->left, table) && check_expression(node->right, table);
+            
+                VarType left_type = TYPE_INT;
+                VarType right_type = TYPE_INT;
+            
+                if (node->left->type == AST_IDENTIFIER) {
+                    Symbol *sym = lookup_symbol(table, node->left->token.lexeme);
+                    if (sym) left_type = sym->type;
+                } else if (node->left->type == AST_STRING_LITERAL) {
+                    left_type = TYPE_STRING;
+                }
+            
+                if (node->right->type == AST_IDENTIFIER) {
+                    Symbol *sym = lookup_symbol(table, node->right->token.lexeme);
+                    if (sym) right_type = sym->type;
+                } else if (node->right->type == AST_STRING_LITERAL) {
+                    right_type = TYPE_STRING;
+                }
+            
+                if ((left_type == TYPE_STRING && right_type != TYPE_STRING) ||
+                    (left_type != TYPE_STRING && right_type == TYPE_STRING)) {
+                    semantic_error(SEM_ERROR_TYPE_MISMATCH, node->token.lexeme, node->token.line);
+                    result = 0;
+                }
+            
+                break;
+        }
 
         default:
             semantic_error(SEM_ERROR_INVALID_OPERATION, node->token.lexeme, node->token.line);
@@ -421,7 +450,7 @@ int main() {
         parser_init(sem_input);
         ASTNode *ast = parse();
 
-        print_ast(ast, 0);
+        // print_ast(ast, 0);
 
         int result = analyze_semantics(ast);
 
