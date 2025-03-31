@@ -1,7 +1,15 @@
 int x;
 string y;
 
-x = 1;
-y = "TEST";
+x = 0;
+
+if (x) {
+    int a;
+    b = 1;
+}
+
+while (x) {
+    int b;
+}
 
 y = y + x;
